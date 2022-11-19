@@ -53,13 +53,7 @@ function foo(Application $app): void
 
 class Service
 {
-    /**
-     * @var Application
-     */
-    private $application; //@phpstan-ignore-line
-
-    public function __construct(Application $application)
+    public function __construct(private Application $application)
     {
-        $this->application = $application;
     }
 }

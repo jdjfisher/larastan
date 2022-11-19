@@ -4,23 +4,36 @@ declare(strict_types=1);
 
 namespace Tests\Rules;
 
-use Tests\RulesTest;
+use NunoMaduro\Larastan\Rules\NoModelMakeRule;
+use PHPStan\Testing\RuleTestCase;
+use PHPStan\Rules\Rule;
 
-class NoModelMakeRuleTest extends RulesTest
+/** @extends RuleTestCase<NoModelMakeRule> */
+class NoModelMakeRuleTest extends RuleTestCase
 {
+    protected function getRule(): Rule
+    {
+        $reflectionProvider = $this->createReflectionProvider();
+
+        return new NoModelMakeRule($reflectionProvider);
+    }
+
     public function testNoFalsePositives(): void
     {
-        $errors = $this->findErrors(__DIR__.'/Data/CorrectModelInstantiation.php');
-        $this->assertEquals([], $errors, 'The rule should not result in any errors for this data set.');
+        $this->analyse([__DIR__.'/Data/CorrectModelInstantiation.php'], []);
     }
 
     public function testModelMake(): void
     {
-        $errors = $this->findErrorsByLine(__DIR__.'/Data/ModelMake.php');
-
-        self::assertEquals([
-            13 => "Called 'Model::make()' which performs unnecessary work, use 'new Model()'.",
-            20 => "Called 'Model::make()' which performs unnecessary work, use 'new Model()'.",
-        ], $errors);
+        $this->analyse([__DIR__.'/Data/ModelMake.php'], [
+            [
+                "Called 'Model::make()' which performs unnecessary work, use 'new Model()'.",
+                13,
+            ],
+            [
+                "Called 'Model::make()' which performs unnecessary work, use 'new Model()'.",
+                20,
+            ],
+        ]);
     }
 }
